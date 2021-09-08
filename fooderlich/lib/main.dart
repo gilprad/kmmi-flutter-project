@@ -4,7 +4,7 @@ import 'package:fooderlich/home.dart';
 import 'package:fooderlich/models/models.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+Future<void> main() async {
   runApp(Fooderlich());
 }
 
