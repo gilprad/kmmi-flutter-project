@@ -5,7 +5,6 @@ class TabManager extends ChangeNotifier {
 
   void goToTab(index) {
     selectedTab = index;
-    print('it works');
     notifyListeners();
   }
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:fooderlich/models/models.dart';
 import 'package:fooderlich/screens/explore_screen.dart';
 import 'package:fooderlich/screens/recipe_screen.dart';
+import 'package:provider/provider.dart';
 import 'screens/grocery_screen.dart';
 
 class Home extends StatefulWidget {
@@ -10,39 +12,53 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  int _selectedIndex = 0;
   static List<Widget> pages = <Widget>[
     ExploreScreen(),
     RecipesScreen(),
     const GroceryScreen(),
   ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-            actions: [IconButton(onPressed: () {}, icon: Icon(Icons.search))],
-            title: Text('Fooderlich',
-                style: Theme.of(context).textTheme.headline6)),
-        body: pages[_selectedIndex],
-        bottomNavigationBar: BottomNavigationBar(
+    // 1
+    return Consumer<TabManager>(
+      builder: (context, tabManager, child) {
+        return Scaffold(
+          resizeToAvoidBottomInset: false,
+          appBar: AppBar(
+            actions: [
+              IconButton(onPressed: () {}, icon: const Icon(Icons.search))
+            ],
+            title: Text(
+              'Fooderlich',
+              style: Theme.of(context).textTheme.headline6,
+            ),
+          ),
+          body: IndexedStack(index: tabManager.selectedTab, children: pages),
+          bottomNavigationBar: BottomNavigationBar(
             selectedItemColor:
                 Theme.of(context).textSelectionTheme.selectionColor,
-            currentIndex: _selectedIndex,
-            onTap: _onItemTapped,
+            currentIndex: tabManager.selectedTab,
+            onTap: (index) {
+              tabManager.goToTab(index);
+            },
             items: <BottomNavigationBarItem>[
               const BottomNavigationBarItem(
-                  icon: Icon(Icons.explore), label: 'Explore'),
+                icon: Icon(Icons.explore),
+                label: 'Explore',
+              ),
               const BottomNavigationBarItem(
-                  icon: Icon(Icons.book), label: 'Recipe'),
+                icon: Icon(Icons.book),
+                label: 'Recipes',
+              ),
               const BottomNavigationBarItem(
-                  icon: Icon(Icons.list), label: 'To Buy'),
-            ]));
+                icon: Icon(Icons.list),
+                label: 'To Buy',
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

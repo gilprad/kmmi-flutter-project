@@ -33,13 +33,12 @@ class EmptyGroceryScreen extends StatelessWidget {
             MaterialButton(
               onPressed: () {
                 Provider.of<TabManager>(context, listen: false).goToRecipe();
-                print('Ok');
               },
-              textColor: Colors.white,
+              textColor: Colors.black,
               child: Text('Browse Recipes'),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30)),
-              color: Colors.green,
+              color: Colors.tealAccent,
             )
           ],
         ),
