@@ -35,9 +35,10 @@ dependencies:
   like_button: ^2.0.3
   shared_preferences: ^2.0.7
   provider: ^5.0.0
-  flutter_colorpicker: ^0.4.0
+  flutter_colorpicker: ^0.6.0
   intl: ^0.17.0
   uuid: ^3.0.4
+  dio: ^4.0.0
 
 dev_dependencies:
   flutter_test:

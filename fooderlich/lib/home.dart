@@ -36,8 +36,9 @@ class _HomeState extends State<Home> {
                       final data =
                           pref.getStringList('search').reversed.toList() ?? [];
                       showSearch(
-                          context: context,
-                          delegate: SearchData(data: data, pref: pref));
+                        context: context,
+                        delegate: SearchData(data: data, pref: pref),
+                      );
                     });
                   },
                   icon: const Icon(Icons.search))
@@ -82,6 +83,9 @@ class SearchData extends SearchDelegate<String> {
 
   SearchData({this.data, this.pref});
 
+  @override
+  String get searchFieldLabel => 'Search recipe';
+
   void addSearch() {
     if (query.isNotEmpty) {
       data.add(query);
@@ -92,10 +96,6 @@ class SearchData extends SearchDelegate<String> {
   void removeSearch(int index) {
     data.removeAt(index);
     pref.setStringList('search', data);
-  }
-
-  void refreshSearch() {
-    data = pref.getStringList('search');
   }
 
   @override
@@ -124,7 +124,9 @@ class SearchData extends SearchDelegate<String> {
   @override
   Widget buildResults(BuildContext context) {
     addSearch();
-    return Container();
+    return Container(
+      child: Text(query),
+    );
   }
 
   @override
@@ -132,6 +134,9 @@ class SearchData extends SearchDelegate<String> {
     return ListView.builder(
         itemCount: data.length > 10 ? 10 : data.length,
         itemBuilder: (context, index) => ListTile(
+              onTap: () {
+                showResults(context);
+              },
               title: Text(data[index]),
               leading: Icon(Icons.history),
               trailing: IconButton(
