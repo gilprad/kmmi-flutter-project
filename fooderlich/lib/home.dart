@@ -1,5 +1,11 @@
+import 'dart:convert';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:fooderlich/api/dio.dart';
+import 'package:fooderlich/api/recipe_model.dart';
 import 'package:fooderlich/models/models.dart';
+import 'package:fooderlich/models/search_manager.dart';
 import 'package:fooderlich/screens/explore_screen.dart';
 import 'package:fooderlich/screens/recipe_screen.dart';
 import 'package:provider/provider.dart';
@@ -13,6 +19,23 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  // Future<List<RecipeModel>> getData() async {
+  //   List<RecipeModel> results = [];
+  //   Response response =
+  //       await DioClient.callApi("https://api.edamam.com/api/recipes/v2", {
+  //     "app_id": "e1f7a262",
+  //     "app_key": "89c83ac9688ebca6ae26d791c475725d",
+  //     "type": "public",
+  //     "q": keyword
+  //   });
+  //   if (response.data != null) {
+  //     var responseJson = jsonDecode(jsonEncode(response.data));
+  //     results = RecipeModel.fromListDynamic(responseJson['hits']);
+  //   }
+
+  //   return results;
+  // }
+
   Future<SharedPreferences> pref = SharedPreferences.getInstance();
 
   static List<Widget> pages = <Widget>[
@@ -33,11 +56,12 @@ class _HomeState extends State<Home> {
               IconButton(
                   onPressed: () {
                     pref.then((pref) {
-                      final data =
-                          pref.getStringList('search').reversed.toList() ?? [];
+                      final searchData =
+                          pref.getStringList('search').toList() ?? [];
                       showSearch(
                         context: context,
-                        delegate: SearchData(data: data, pref: pref),
+                        delegate:
+                            SearchData(searchData: searchData, pref: pref),
                       );
                     });
                   },
@@ -77,26 +101,42 @@ class _HomeState extends State<Home> {
   }
 }
 
-class SearchData extends SearchDelegate<String> {
-  List<String> data;
+class SearchData extends SearchDelegate<String> with ChangeNotifier {
+  List<String> searchData;
   SharedPreferences pref;
 
-  SearchData({this.data, this.pref});
+  SearchData({this.searchData, this.pref});
 
   @override
   String get searchFieldLabel => 'Search recipe';
 
+  Future<List<RecipeModel>> getData(query) async {
+    List<RecipeModel> results = [];
+    Response response =
+        await DioClient.callApi("https://api.edamam.com/api/recipes/v2", {
+      "app_id": "e1f7a262",
+      "app_key": "89c83ac9688ebca6ae26d791c475725d",
+      "type": "public",
+      "q": query
+    });
+    if (response.data != null) {
+      var responseJson = jsonDecode(jsonEncode(response.data));
+      results = RecipeModel.fromListDynamic(responseJson['hits']);
+    }
+    return results;
+  }
+
   void addSearch() {
     if (query.isNotEmpty) {
-      data.add(query);
-      pref.setStringList('search', data);
+      searchData.add(query);
+      pref.setStringList('search', searchData);
     }
   }
 
-  void removeSearch(int index) {
-    data.removeAt(index);
-    pref.setStringList('search', data);
-  }
+  // void removeSearch(int index) {
+  //   data.removeAt(index);
+  //   pref.setStringList('search', data);
+  // }
 
   @override
   List<Widget> buildActions(BuildContext context) {
@@ -123,27 +163,40 @@ class SearchData extends SearchDelegate<String> {
 
   @override
   Widget buildResults(BuildContext context) {
-    addSearch();
-    return Container(
-      child: Text(query),
-    );
+    return FutureBuilder<List<RecipeModel>>(
+        future: getData(query),
+        builder: (ctx, snapshot) {
+          if (snapshot.hasData) {
+            return ListView.separated(
+              separatorBuilder: (context, index) => Divider(),
+              itemCount: snapshot.data.length,
+              itemBuilder: (context, index) => ListTile(
+                leading: Image.network(snapshot.data[index].recipe.image),
+                title: Text(snapshot.data[index].recipe.label),
+                onTap: () {},
+              ),
+            );
+          } else if (snapshot.hasError) {
+            return Text(snapshot.data.toString());
+          }
+          return Center(child: CircularProgressIndicator());
+        });
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
     return ListView.builder(
-        itemCount: data.length > 10 ? 10 : data.length,
+        itemCount: searchData.length > 10 ? 10 : searchData.length,
         itemBuilder: (context, index) => ListTile(
               onTap: () {
+                query = searchData[index];
                 showResults(context);
               },
-              title: Text(data[index]),
+              title: Text(searchData[index]),
               leading: Icon(Icons.history),
               trailing: IconButton(
                 icon: Icon(Icons.clear),
-                onPressed: () {
-                  removeSearch(index);
-                },
+                onPressed: () {},
               ),
             ));
   }

@@ -54,4 +54,9 @@ class RecipeModel {
 
   @override
   int get hashCode => recipe.hashCode ^ links.hashCode;
+
+  static List<RecipeModel> fromListDynamic(List<dynamic> datas) {
+    if (datas == null) return [];
+    return datas.map<RecipeModel>((e) => RecipeModel.fromMap(e)).toList();
+  }
 }

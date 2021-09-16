@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fooderlich/helper/theme.dart';
 import 'package:fooderlich/home.dart';
 import 'package:fooderlich/models/models.dart';
+import 'package:fooderlich/models/search_manager.dart';
 import 'package:provider/provider.dart';
 
 Future<void> main() async {
@@ -26,6 +27,9 @@ class Fooderlich extends StatelessWidget {
           ChangeNotifierProvider(
             create: (context) => GroceryManager(),
           ),
+          ChangeNotifierProvider(
+            create: (context) => SearchManager(),
+          )
         ],
         child: const Home(),
       ),
