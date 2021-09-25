@@ -4,9 +4,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:fooderlich/api/dio.dart';
 import 'package:fooderlich/api/recipe_model.dart';
+import 'package:fooderlich/api/repository/memory_repository.dart';
 import 'package:fooderlich/models/models.dart';
-import 'package:fooderlich/models/search_manager.dart';
+import 'package:fooderlich/screens/detail_recipe_screen.dart';
 import 'package:fooderlich/screens/explore_screen.dart';
+import 'package:fooderlich/screens/favorite_screen.dart';
 import 'package:fooderlich/screens/recipe_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,29 +20,13 @@ class Home extends StatefulWidget {
   _HomeState createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
-  // Future<List<RecipeModel>> getData() async {
-  //   List<RecipeModel> results = [];
-  //   Response response =
-  //       await DioClient.callApi("https://api.edamam.com/api/recipes/v2", {
-  //     "app_id": "e1f7a262",
-  //     "app_key": "89c83ac9688ebca6ae26d791c475725d",
-  //     "type": "public",
-  //     "q": keyword
-  //   });
-  //   if (response.data != null) {
-  //     var responseJson = jsonDecode(jsonEncode(response.data));
-  //     results = RecipeModel.fromListDynamic(responseJson['hits']);
-  //   }
-
-  //   return results;
-  // }
-
+class _HomeState extends State<Home> with ChangeNotifier {
   Future<SharedPreferences> pref = SharedPreferences.getInstance();
 
   static List<Widget> pages = <Widget>[
     ExploreScreen(),
     RecipesScreen(),
+    const FavoriteScreen(),
     const GroceryScreen(),
   ];
 
@@ -74,6 +60,7 @@ class _HomeState extends State<Home> {
           ),
           body: IndexedStack(index: tabManager.selectedTab, children: pages),
           bottomNavigationBar: BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
             selectedItemColor:
                 Theme.of(context).textSelectionTheme.selectionColor,
             currentIndex: tabManager.selectedTab,
@@ -90,6 +77,10 @@ class _HomeState extends State<Home> {
                 label: 'Recipes',
               ),
               const BottomNavigationBarItem(
+                icon: Icon(Icons.favorite),
+                label: 'Favorited',
+              ),
+              const BottomNavigationBarItem(
                 icon: Icon(Icons.list),
                 label: 'To Buy',
               ),
@@ -101,7 +92,7 @@ class _HomeState extends State<Home> {
   }
 }
 
-class SearchData extends SearchDelegate<String> with ChangeNotifier {
+class SearchData extends SearchDelegate<String> {
   List<String> searchData;
   SharedPreferences pref;
 
@@ -128,15 +119,10 @@ class SearchData extends SearchDelegate<String> with ChangeNotifier {
 
   void addSearch() {
     if (query.isNotEmpty) {
-      searchData.add(query);
+      searchData.insert(0, query);
       pref.setStringList('search', searchData);
     }
   }
-
-  // void removeSearch(int index) {
-  //   data.removeAt(index);
-  //   pref.setStringList('search', data);
-  // }
 
   @override
   List<Widget> buildActions(BuildContext context) {
@@ -163,9 +149,10 @@ class SearchData extends SearchDelegate<String> with ChangeNotifier {
 
   @override
   Widget buildResults(BuildContext context) {
+    addSearch();
     return FutureBuilder<List<RecipeModel>>(
         future: getData(query),
-        builder: (ctx, snapshot) {
+        builder: (context, snapshot) {
           if (snapshot.hasData) {
             return ListView.separated(
               separatorBuilder: (context, index) => Divider(),
@@ -173,7 +160,19 @@ class SearchData extends SearchDelegate<String> with ChangeNotifier {
               itemBuilder: (context, index) => ListTile(
                 leading: Image.network(snapshot.data[index].recipe.image),
                 title: Text(snapshot.data[index].recipe.label),
-                onTap: () {},
+                onTap: () {
+                  final MemoryRepository repository =
+                      Provider.of<MemoryRepository>(context, listen: false);
+
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) =>
+                          ListenableProvider<MemoryRepository>.value(
+                            value: repository,
+                            child: DetailRecipeScreen(
+                              recipeModel: snapshot.data[index],
+                            ),
+                          )));
+                },
               ),
             );
           } else if (snapshot.hasError) {

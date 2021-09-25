@@ -1,6 +1,8 @@
 import 'dart:convert';
 
-class Ingredient {
+import 'package:equatable/equatable.dart';
+
+class Ingredient extends Equatable {
   final String text;
   final int weight;
   final String foodCategory;
@@ -80,4 +82,7 @@ class Ingredient {
         foodId.hashCode ^
         image.hashCode;
   }
+
+  @override
+  List<Object> get props => [text, foodId, foodId];
 }

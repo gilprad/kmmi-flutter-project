@@ -1,6 +1,8 @@
 import 'dart:convert';
 
-class Self {
+import 'package:equatable/equatable.dart';
+
+class Self extends Equatable {
   final String href;
   final String title;
   Self({
@@ -48,4 +50,7 @@ class Self {
 
   @override
   int get hashCode => href.hashCode ^ title.hashCode;
+
+  @override
+  List<Object> get props => [href, title];
 }

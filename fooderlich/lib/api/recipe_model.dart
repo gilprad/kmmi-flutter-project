@@ -1,9 +1,11 @@
 import 'dart:convert';
 
+import 'package:equatable/equatable.dart';
+
 import 'links.dart';
 import 'recipe.dart';
 
-class RecipeModel {
+class RecipeModel extends Equatable {
   final Recipe recipe;
   final Links links;
   RecipeModel({
@@ -59,4 +61,7 @@ class RecipeModel {
     if (datas == null) return [];
     return datas.map<RecipeModel>((e) => RecipeModel.fromMap(e)).toList();
   }
+
+  @override
+  List<Object> get props => [recipe, links];
 }

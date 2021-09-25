@@ -1,10 +1,11 @@
 import 'dart:convert';
 
+import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 
 import 'ingredient.dart';
 
-class Recipe {
+class Recipe extends Equatable {
   final String uri;
   final String label;
   final String image;
@@ -163,5 +164,12 @@ class Recipe {
         calories.hashCode ^
         totalWeight.hashCode ^
         totalTime.hashCode;
+  }
+
+  @override
+  List<Object> get props => [uri];
+
+  String getCaloriesInfo() {
+    return calories.floor().toString() + " kCAL";
   }
 }

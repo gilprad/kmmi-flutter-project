@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 enum Method {
   POST,
@@ -10,14 +9,14 @@ class DioClient {
   static Future<Response> callApi(String url, Map<String, dynamic> payload,
       {Method method = Method.GET}) async {
     Dio dio = Dio();
-    dio.interceptors.add(PrettyDioLogger(
-        requestHeader: true,
-        requestBody: true,
-        responseBody: true,
-        responseHeader: false,
-        error: true,
-        compact: true,
-        maxWidth: 100));
+    // dio.interceptors.add(PrettyDioLogger(
+    //     requestHeader: true,
+    //     requestBody: true,
+    //     responseBody: true,
+    //     responseHeader: false,
+    //     error: true,
+    //     compact: true,
+    //     maxWidth: 100));
     Response response;
     if (method == Method.POST) {
       response = await dio.post(url, queryParameters: payload);
